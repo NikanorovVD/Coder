@@ -16,19 +16,19 @@ namespace Coder
         {
             ActionType action = ActionType.decode
                 ;
-            CodeType type = CodeType.Haffman;
+            CodeType type = CodeType.Interval;
             string[] paths = new string[1];
             string new_path = null;
 
             if (action == ActionType.code_one_file) {
-                paths[0] = "C:\\Coder2.0\\files\\Bal_hiwnikov.txt";
-                new_path = "C:\\Coder2.0\\out\\Bal_hiwnikov";
+                paths[0] = "C:\\МИЭТ\\Coder\\files\\ananas.txt";
+                new_path = "C:\\МИЭТ\\Coder\\out\\ananas";
             }
 
             if (action == ActionType.decode)
             {
-                paths[0] = "C:\\Coder2.0\\out\\Bal_hiwnikov.xxxx";
-                new_path = "C:\\Coder2.0\\decoder_out";
+                paths[0] = "C:\\МИЭТ\\Coder\\out\\ananas.xxxx";
+                new_path = "C:\\МИЭТ\\Coder\\decoder_out";
             }
 
 
