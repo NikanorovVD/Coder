@@ -30,10 +30,11 @@ namespace Coder
                 writer.Write(BitConverter.GetBytes(freqs[i]), 0, 1);
             }
         }
-
         public void WriteData(BinaryWriter writer)
         {
             bitWriter.Write(writer);
         }
+
+        public int GetCodingInformationSize() => 256;
     }
 }

@@ -28,5 +28,7 @@ namespace Coder
         {
             writer.Write(OutputData, 0, OutputData.Length);
         }
+
+        public int GetCodingInformationSize() => 0;
     }
 }

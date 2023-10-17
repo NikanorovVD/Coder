@@ -35,5 +35,7 @@ namespace Coder
         {
             bitWriter.Write(writer);
         }
+
+        public int GetCodingInformationSize() => 256;
     }
 }

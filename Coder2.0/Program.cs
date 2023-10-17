@@ -8,30 +8,50 @@ using System.Collections;
 
 namespace Coder
 {
-    enum ActionType {code_one_file, code_several_files, code_directory, decode }
+    enum ActionType {code_one_file, code_several_files, code_directory, decode, test }
     enum CodeType {NoCoding = 0, Haffman = 1, Shannon = 2, Interval = 3, LZW = 4}
     class Program
     {
         static void Main(string[] args)
         {
-            ActionType action = ActionType.decode
-                ;
+            ActionType action = ActionType.test;
             CodeType type = CodeType.Interval;
-            string[] paths = new string[1];
-            string new_path = null;
 
-            if (action == ActionType.code_one_file) {
-                paths[0] = "C:\\МИЭТ\\Coder\\files\\ananas.txt";
-                new_path = "C:\\МИЭТ\\Coder\\out\\ananas";
-            }
+            string filename = "Bal_hiwnikov.txt";
+            string folder = "C:\\Coder2.0_git";
+            
+            
 
-            if (action == ActionType.decode)
+            if(action == ActionType.test)
             {
-                paths[0] = "C:\\МИЭТ\\Coder\\out\\ananas.xxxx";
-                new_path = "C:\\МИЭТ\\Coder\\decoder_out";
+                string path = Path.Combine(folder, "files", filename);
+                string coder_path = Path.Combine(folder, "out", Path.ChangeExtension(filename, MainHeader.extention));
+                string decoder_path = Path.Combine(folder, "decoder_out");
+                if (File.Exists(path))
+                {
+                    Coder(new FileInfo(path), type, coder_path);
+                    Decoder(new FileInfo(coder_path), decoder_path);
+                }
+                else
+                    Console.WriteLine($"Указанный файл: {path} не существует");
+                Console.ReadLine();
+                return;
             }
 
+            //тест для двух файлов
+            string[] paths = { "C:\\Coder2.0_git\\files\\qwe.txt", "C:\\Coder2.0_git\\files\\Small.txt" };
+            string new_path = "C:\\Coder2.0_git\\out\\qwe+small";
 
+
+            //string[] paths = { "C:\\Coder2.0_git\\out\\qwe+small.xxxx" };
+            //string new_path = "C:\\Coder2.0_git\\decoder_out";
+
+            //тест для папок
+            //string[] paths = { "C:\\Coder2.0_git\\files\\Books" };
+            //string new_path = "C:\\Coder2.0_git\\out\\books";
+
+            //string[] paths = { "C:\\Coder2.0_git\\out\\books.xxxx" };
+            //string new_path = "C:\\Coder2.0_git\\decoder_out";
 
             if (action == ActionType.code_one_file) {
                 if (File.Exists(paths[0]))
@@ -59,7 +79,11 @@ namespace Coder
                 if (Directory.Exists(paths[0]))
                 {
                     int i = 1;
-                    Coder(new DirectoryInfo(paths[0]), ref i, type, 0, new_path);
+                    DirectoryInfo directory = new DirectoryInfo(paths[0]);
+                    new_path = Path.ChangeExtension(new_path ?? directory.FullName, MainHeader.extention);
+                    BinaryWriter writer = new BinaryWriter(File.Open(new_path, FileMode.OpenOrCreate));
+                    Coder(new DirectoryInfo(paths[0]), ref i, type, 0, new_path, writer);
+                    writer.Close();
                     Console.WriteLine($"Архив успешно записан в {new_path}");
                 }
                 else
@@ -93,12 +117,7 @@ namespace Coder
             using (BinaryWriter writer = new BinaryWriter(File.Open(new_path, FileMode.OpenOrCreate)))
             {
                 MainHeader.WriteMainHeader(writer);
-                ICoder coder = GetCoderByType(code_type, data);
-                coder.MakeData();
-                FileHeader header = new FileHeader(file, coder.GetArchiveDataSize(), (int)code_type);
-                header.WriteFileHeader(writer);
-                coder.WriteCodingInformation(writer);
-                coder.WriteData(writer);
+                CodeFile(code_type, data, file, 0, writer);
             }
 
             Console.WriteLine($"файл успешно записан в {new_path}");
@@ -126,13 +145,9 @@ namespace Coder
                 {
                     data = reader.ReadBytes((int)file.Length);
                 }
-                ICoder coder = GetCoderByType(code_type, data);
-                coder.MakeData();
-                FileHeader header = new FileHeader(file, coder.GetArchiveDataSize(), (int)code_type);
-                header.WriteFileHeader(writer);
-                coder.WriteCodingInformation(writer);
-                coder.WriteData(writer);
+                CodeFile(code_type, data, file, 0, writer);
             }
+            writer.Close();
             Console.WriteLine($"файл успешно записан в {new_path}");
         }
 
@@ -145,10 +160,7 @@ namespace Coder
             int this_id = id;
             byte[] data;
 
-            new_path = Path.ChangeExtension(new_path ?? directory.FullName, MainHeader.extention);
-            writer = writer ?? new BinaryWriter(File.Open(new_path, FileMode.OpenOrCreate));
             MainHeader.num_elements = 1 + num_elements(directory);
-
 
             if (id == 1) MainHeader.WriteMainHeader(writer);
 
@@ -157,26 +169,18 @@ namespace Coder
 
             foreach(FileInfo file in directory.GetFiles())
             {
-
                 using (BinaryReader reader = new BinaryReader(file.Open(FileMode.Open)))
                 {
                     data = reader.ReadBytes((int)file.Length);
                 }
-                ICoder coder = GetCoderByType(code_type, data);
-                coder.MakeData();
-                FileHeader header = new FileHeader(file, coder.GetArchiveDataSize(), (int)code_type, id);
-                header.WriteFileHeader(writer);
-                coder.WriteCodingInformation(writer);
-                coder.WriteData(writer);
+                CodeFile(code_type, data, file, id, writer);
             }
             foreach(DirectoryInfo dir in directory.GetDirectories())
             {
                 id++;
                 Coder(dir, ref id, code_type, this_id, new_path, writer);
             }
-
-
-            writer.Close();            
+      
 
             int num_elements(DirectoryInfo main_directory){
                 int n = 0;
@@ -191,6 +195,24 @@ namespace Coder
 
         }
 
+
+        static void CodeFile(CodeType code_type, byte[] data, FileInfo file, int id, BinaryWriter writer, bool intelligent = true)
+        {
+            ICoder coder = GetCoderByType(code_type, data);
+            coder.MakeData();
+
+            if (intelligent && ((coder.GetArchiveDataSize() + coder.GetCodingInformationSize()) > data.Length))
+            {
+                Console.WriteLine($"Файл {file.Name} будет записан без сжатия");
+                code_type = CodeType.NoCoding;
+                coder = GetCoderByType(CodeType.NoCoding, data);
+            }
+
+            FileHeader header = new FileHeader(file, coder.GetArchiveDataSize(), (int)code_type, id);
+            header.WriteFileHeader(writer);
+            coder.WriteCodingInformation(writer);
+            coder.WriteData(writer);
+        }
 
         static void Decoder(FileInfo file, string new_dir_path = null)
         {
@@ -284,9 +306,11 @@ namespace Coder
         public NoCodingWriter(byte[] data) => this.data = data;
 
         public long GetArchiveDataSize() => data.Length;
+        public int GetCodingInformationSize() => 0;
         public void MakeData() { }
         public void WriteCodingInformation(BinaryWriter writer) { }
         public void WriteData(BinaryWriter writer) => writer.Write(data, 0, data.Length);
+        
     }
 
     class NoCodingDecoder : IDecoder

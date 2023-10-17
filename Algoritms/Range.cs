@@ -33,7 +33,7 @@ namespace Coder
             long First = N / 4;
             long Half = 2 * First;
             long Last = 3 * First;
-            Console.WriteLine(N);
+            //Console.WriteLine(N);
             long l = 0;
             long t = N - 1;
             long delta;
@@ -64,7 +64,7 @@ namespace Coder
                 }
             }
             bits_plus_follow(true);
-            Console.WriteLine(bits_to_follow);
+            //Console.WriteLine(bits_to_follow);
 
             return bits.ToArray();
 
@@ -86,7 +86,7 @@ namespace Coder
             }
             pfeq[freq.Length] = D;
             long N = 4 * D * D * D * 1024;
-            Console.WriteLine(N);
+            //Console.WriteLine(N);
             long First = N / 4;
             long Half = 2 * First;
             long Last = 3 * First;

@@ -21,6 +21,9 @@ namespace Coder
 
         public long GetArchiveDataSize() => bitWriter.EndSize;
 
+        public int GetCodingInformationSize() => 256;
+
+
         public void MakeData() => bitWriter.Cod();
 
         public void WriteCodingInformation(BinaryWriter writer)

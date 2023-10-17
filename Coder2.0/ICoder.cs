@@ -11,6 +11,7 @@ namespace Coder
     {
         void MakeData();
         long GetArchiveDataSize();
+        int GetCodingInformationSize();
         void WriteCodingInformation(BinaryWriter writer);
         void WriteData(BinaryWriter writer);
     }
