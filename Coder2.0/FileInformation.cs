@@ -94,16 +94,13 @@ namespace Coder
             int n = freqs.Sum();
             int maxFreq = freqs.Max();
             int D = 64;
-            //while (D < n)
-            //    D *= 2;
-            //int[] normfreqs;
             for(int i = 0; i< freqs.Length; i++)
             {
                 if(freqs[i]!=0)
                 freqs[i] = (freqs[i]-1) * (D-1) / n + 1;
-                //Console.WriteLine(freqs[i]);
+                Console.Write(freqs[i].ToString()+' ');
             }
-            //Console.WriteLine(freqs.Sum());
+            Console.WriteLine(freqs.Sum());
 
             return freqs;
         }

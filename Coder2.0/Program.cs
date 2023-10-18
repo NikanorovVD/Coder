@@ -15,10 +15,10 @@ namespace Coder
         static void Main(string[] args)
         {
             ActionType action = ActionType.test;
-            CodeType type = CodeType.Interval;
+            CodeType type = CodeType.Shannon;
 
-            string filename = "Bal_hiwnikov.txt";
-            string folder = "C:\\Coder2.0_git";
+            string filename = "q.jpg";
+            string folder = "C:\\МИЭТ\\Coder";
             
             
 
@@ -200,7 +200,10 @@ namespace Coder
         {
             ICoder coder = GetCoderByType(code_type, data);
             coder.MakeData();
-
+            Console.WriteLine($"Размер исходного файла {data.Length}");
+            Console.WriteLine($"Размер массива частот в байтах {coder.GetCodingInformationSize()}");
+            Console.WriteLine($"Размер сжатых данных в байтах {coder.GetArchiveDataSize()}");
+            Console.WriteLine($"Размер файла со сжатием:{coder.GetArchiveDataSize() + coder.GetCodingInformationSize()}");
             if (intelligent && ((coder.GetArchiveDataSize() + coder.GetCodingInformationSize()) > data.Length))
             {
                 Console.WriteLine($"Файл {file.Name} будет записан без сжатия");
@@ -266,7 +269,7 @@ namespace Coder
         {
             switch (code_type)
             {
-                case CodeType.Haffman: return new HaffmanDecoder(end_data_len);
+                case CodeType.Haffman: return new HaffmanDecoder(end_data_len-4);
                 case CodeType.NoCoding: return new NoCodingDecoder();
                 case CodeType.Shannon: return new FanonaShenonaDecoder(end_data_len-4);
                 case CodeType.Interval: return new RangeDecoder(end_data_len - 4);

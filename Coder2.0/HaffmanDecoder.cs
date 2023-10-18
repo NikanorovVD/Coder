@@ -12,12 +12,14 @@ namespace Coder
     {
         int[] freqs;
         public byte[] sourceData;
-        byte[] endData;
+        List<byte> endData;
+        int end_data_len;
 
         public HaffmanDecoder(int end_data_len)
         {
             freqs = new int[256];
-            endData = new byte[end_data_len];
+            endData = new List<byte>();
+            this.end_data_len = end_data_len;
         }
 
         public void ReadCodingInformation(BinaryReader reader)
@@ -41,8 +43,12 @@ namespace Coder
             TreeNode current = Haffman.HaffmanTree[0];
             
             int k = 0;
-            foreach (bool bit in bits)
+            int j = 0;
+            bool bit;
+            while (k != end_data_len)
             {
+                bit = bits[j];
+                j++;
                 if (bit)
                 {
                     if (current.bytright != null)
@@ -60,11 +66,12 @@ namespace Coder
 
                 if (current.bytleft == null && current.bytright == null)
                 {
-                    endData[k++] = ((byte)current.byt);
+                    endData.Add((byte)current.byt);
+                    k++;
                     current = Haffman.HaffmanTree[0];
                 }
             }
-           writer.Write(endData, 0, k);
+           writer.Write(endData.ToArray(), 0, k);
         }
     }
 }
